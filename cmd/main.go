@@ -1,5 +1,13 @@
 package main
 
+import (
+	"github.com/train360-corp/supasecure/internal/cli"
+	"os"
+)
+
 func main() {
-	println("Hello, World!")
+	if err := supasecure.CLI.Run(os.Args); err != nil {
+		os.Exit(1)
+	}
+	os.Exit(0)
 }
