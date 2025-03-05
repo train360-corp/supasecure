@@ -3,8 +3,8 @@ package commands
 import (
 	emailverifier "github.com/AfterShip/email-verifier"
 	"github.com/fatih/color"
-	"github.com/train360-corp/supasecure/cli/internal/auth/secrets"
 	"github.com/train360-corp/supasecure/cli/internal/models"
+	"github.com/train360-corp/supasecure/cli/internal/utils/auth/secrets"
 	"github.com/train360-corp/supasecure/cli/internal/utils/cmdutil"
 	"github.com/train360-corp/supasecure/cli/internal/utils/supabase"
 	"github.com/urfave/cli/v2"
@@ -118,7 +118,7 @@ var AuthCommand = &cli.Command{
 
 				verifier := emailverifier.NewVerifier()
 				email, _ := cmdutil.Prompt(c, "email")
-				if res, e := verifier.Verify(email); e != nil {
+				if res, e := verifier.Verify(email); (res == nil || !res.Syntax.Valid) && e != nil {
 					return cli.Exit(color.RedString(e.Error()), 1)
 				} else if !res.Syntax.Valid {
 					return cli.Exit(color.RedString("invalid email address: %s", email), 1)
