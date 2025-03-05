@@ -69,28 +69,26 @@ brews:
     homepage: "https://github.com/train360-corp/homebrew-tap"
     description: "CLI for interacting with a Supasecure instance."
     license: "MIT"
-
-    # Packages your package depends on.
-#    dependencies:
-#      - name: git
-#        # Allow to specify the OS in which the dependency is required.
-#        # Valid options are `mac` and `linux`.
-#        os: mac
-#      - name: zsh
-#        type: optional
-#      - name: fish
-#        version: v1.2.3
-#      # if providing both version and type, only the type will be taken into
-#      # account.
-#      - name: elvish
-#        type: optional
-#        version: v1.2.3
     test: |
       system "#{bin}/supasecure --version"
       # ...
-
     repository:
       owner: train360-corp
       name: homebrew-tap
       branch: main
       token: "{{ .Env.GITHUB_TOKEN }}"
+    # Packages your package depends on.
+    #    dependencies:
+    #      - name: git
+    #        # Allow to specify the OS in which the dependency is required.
+    #        # Valid options are `mac` and `linux`.
+    #        os: mac
+    #      - name: zsh
+    #        type: optional
+    #      - name: fish
+    #        version: v1.2.3
+    #      # if providing both version and type, only the type will be taken into
+    #      # account.
+    #      - name: elvish
+    #        type: optional
+    #        version: v1.2.3
