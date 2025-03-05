@@ -1,6 +1,8 @@
 package shims
 
-import "github.com/train360-corp/supasecure/internal/models"
+import (
+	"github.com/train360-corp/supasecure/cli/internal/models"
+)
 
 type SecretShim interface {
 	GetSecret() (*models.Credentials, error)

@@ -3,10 +3,10 @@ package commands
 import (
 	emailverifier "github.com/AfterShip/email-verifier"
 	"github.com/fatih/color"
-	"github.com/train360-corp/supasecure/internal/auth/secrets"
-	"github.com/train360-corp/supasecure/internal/models"
-	"github.com/train360-corp/supasecure/internal/utils/cmdutil"
-	"github.com/train360-corp/supasecure/internal/utils/supabase"
+	"github.com/train360-corp/supasecure/cli/internal/auth/secrets"
+	"github.com/train360-corp/supasecure/cli/internal/models"
+	"github.com/train360-corp/supasecure/cli/internal/utils/cmdutil"
+	"github.com/train360-corp/supasecure/cli/internal/utils/supabase"
 	"github.com/urfave/cli/v2"
 	"strings"
 )

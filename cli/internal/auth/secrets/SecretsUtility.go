@@ -1,8 +1,8 @@
 package secrets
 
 import (
-	"github.com/train360-corp/supasecure/internal/auth/secrets/shims"
-	"github.com/train360-corp/supasecure/internal/models"
+	"github.com/train360-corp/supasecure/cli/internal/auth/secrets/shims"
+	"github.com/train360-corp/supasecure/cli/internal/models"
 )
 
 func SetSecret(credentials *models.Credentials) error {

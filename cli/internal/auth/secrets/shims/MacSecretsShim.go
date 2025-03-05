@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"errors"
 	"github.com/keybase/go-keychain"
-	errs "github.com/train360-corp/supasecure/internal/auth/secrets/errors"
-	"github.com/train360-corp/supasecure/internal/models"
+	errors2 "github.com/train360-corp/supasecure/cli/internal/auth/secrets/errors"
+	"github.com/train360-corp/supasecure/cli/internal/models"
 	"log"
 )
 
@@ -35,7 +35,7 @@ func (m *MacSecretsShim) SetSecret(client *models.Credentials) error {
 
 	e := keychain.AddItem(item)
 	if errors.Is(e, keychain.ErrorDuplicateItem) {
-		return &errs.DuplicateError{
+		return &errors2.DuplicateError{
 			Err:  "credential exists",
 			Hint: "use the logout command to remove any existing credential and try again",
 		}
@@ -55,7 +55,7 @@ func (m *MacSecretsShim) GetSecret() (*models.Credentials, error) {
 	if err != nil {
 		return nil, err
 	} else if len(results) != 1 {
-		return nil, errs.NewNotFoundError()
+		return nil, errors2.NewNotFoundError()
 	} else {
 		var client models.Credentials
 		err := json.Unmarshal(results[0].Data, &client)

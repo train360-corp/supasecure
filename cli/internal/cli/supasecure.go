@@ -1,8 +1,8 @@
 package supasecure
 
 import (
+	"github.com/train360-corp/supasecure/cli/internal/cli/commands"
 	"github.com/train360-corp/supasecure/internal"
-	"github.com/train360-corp/supasecure/internal/cli/commands"
 	"github.com/urfave/cli/v2"
 )
 

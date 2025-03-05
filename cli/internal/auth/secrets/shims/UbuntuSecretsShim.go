@@ -6,8 +6,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	errs "github.com/train360-corp/supasecure/internal/auth/secrets/errors"
-	"github.com/train360-corp/supasecure/internal/models"
+	errs "github.com/train360-corp/supasecure/cli/internal/auth/secrets/errors"
+	"github.com/train360-corp/supasecure/cli/internal/models"
 	"log"
 	"os/exec"
 )
