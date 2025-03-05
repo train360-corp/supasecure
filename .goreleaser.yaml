@@ -56,6 +56,7 @@ release:
 
 brews:
   - name: supasecure
+    download_strategy: CurlDownloadStrategy
     url_template: "https://github.com/train360-corp/homebrew-tap/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     url_headers:
       - "Accept: application/octet-stream"
