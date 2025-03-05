@@ -76,7 +76,7 @@ brews:
       owner: train360-corp
       name: homebrew-tap
       branch: main
-      token: "{{ .Env.GITHUB_TOKEN }}"
+      token: "{{ .Env.HOMEBREW_TAP_REPO_SECRET }}"
     # Packages your package depends on.
     #    dependencies:
     #      - name: git
