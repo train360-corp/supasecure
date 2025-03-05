@@ -74,7 +74,7 @@ brews:
       # ...
     repository:
       owner: train360-corp
-      name: homebrew-supasecure
+      name: homebrew-taps
       branch: main
       token: "{{ .Env.HOMEBREW_TAP_REPO_SECRET }}"
     # Packages your package depends on.
