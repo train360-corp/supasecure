@@ -113,18 +113,24 @@ func (c *SupabaseClient) GetUser() (*User, error) {
 	return &c.token.User, nil
 }
 
-// Get retrieves rows from the specified table endpoint and maps them to the provided type
-func (c *SupabaseClient) Get(tableName string, output interface{}) error {
+func (c *SupabaseClient) execute(endpoint string, output interface{}, extraHeaders map[string]string, extraBody map[string]string) error {
 
-	if !c.IsAuthenticated() {
-		return errors.New("supabase client not authenticated")
+	var body io.Reader
+	if extraBody != nil {
+		jsonData, err := json.Marshal(extraBody)
+		if err != nil {
+			return fmt.Errorf("failed to marshal extraBody: %w", err)
+		}
+		body = bytes.NewReader(jsonData)
 	}
 
-	// Build the endpoint URL
-	endpoint := fmt.Sprintf("%s/rest/v1/%s", c.getBaseURL(), tableName)
+	method := "GET"
+	if body != nil {
+		method = "POST"
+	}
 
 	// Create the HTTP request
-	req, err := http.NewRequest("GET", endpoint, nil)
+	req, err := http.NewRequest(method, endpoint, body)
 	if err != nil {
 		return fmt.Errorf("failed to create request: %w", err)
 	}
@@ -133,6 +139,11 @@ func (c *SupabaseClient) Get(tableName string, output interface{}) error {
 	req.Header.Set("apikey", c.credentials.Supabase.Keys.Anon)
 	req.Header.Set("Authorization", "Bearer "+c.token.AccessToken)
 	req.Header.Set("Content-Type", "application/json")
+	if extraHeaders != nil {
+		for k, v := range extraHeaders {
+			req.Header.Set(k, v)
+		}
+	}
 
 	// Make the request
 	resp, err := http.DefaultClient.Do(req)
@@ -144,25 +155,56 @@ func (c *SupabaseClient) Get(tableName string, output interface{}) error {
 	// Check HTTP response status
 	if resp.StatusCode != http.StatusOK {
 		body, _ := io.ReadAll(resp.Body)
-		return fmt.Errorf("failed to retrieve rows from table %s (HTTP response code: %d): %s", tableName, resp.StatusCode, string(body))
+
+		if strings.Contains(string(body), "The result contains 0 rows") {
+			// no rows found
+			return nil
+		}
+
+		return fmt.Errorf("failed to retrieve rows (HTTP response code: %d): %s", resp.StatusCode, string(body))
 	}
 
-	// Read the entire response body into a buffer
+	// Read the entire response bodyData into a buffer
 	bodyBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return fmt.Errorf("failed to read response body: %w", err)
+		return fmt.Errorf("failed to read response bodyData: %w", err)
 	}
 
-	// Convert the body to a string and print/log it
-	//bodyString := string(bodyBytes)
-	//fmt.Println("Response Body:", bodyString)
-
-	// Decode the body into the output object
+	// Decode the bodyData into the output object
 	if err := json.Unmarshal(bodyBytes, &output); err != nil {
 		return fmt.Errorf("failed to decode response: %w", err)
 	}
 
 	return nil
+}
+
+func (c *SupabaseClient) RPC(name string, params map[string]string, output interface{}) error {
+	if !c.IsAuthenticated() {
+		return errors.New("supabase client not authenticated")
+	}
+	endpoint := fmt.Sprintf("%s/rest/v1/rpc/%v", c.getBaseURL(), name)
+	return c.execute(endpoint, output, map[string]string{
+		"Content-Type": "application/json",
+	}, params)
+}
+
+func (c *SupabaseClient) GetById(tableName string, id string, output interface{}) error {
+	if !c.IsAuthenticated() {
+		return errors.New("supabase client not authenticated")
+	}
+	endpoint := fmt.Sprintf("%s/rest/v1/%s?select=*&id=eq.%v", c.getBaseURL(), tableName, id)
+	return c.execute(endpoint, output, map[string]string{
+		"Accept": "application/vnd.pgrst.object+json",
+	}, nil)
+}
+
+// Get retrieves rows from the specified table endpoint and maps them to the provided type
+func (c *SupabaseClient) Get(tableName string, output interface{}) error {
+	if !c.IsAuthenticated() {
+		return errors.New("supabase client not authenticated")
+	}
+	endpoint := fmt.Sprintf("%s/rest/v1/%s", c.getBaseURL(), tableName)
+	return c.execute(endpoint, output, nil, nil)
 }
 
 // getBaseURL returns the base URL of the Supabase client.

@@ -12,5 +12,6 @@ var CLI = &cli.App{
 	Version: internal.Version,
 	Commands: []*cli.Command{
 		commands.AuthCommand,
+		commands.ExecCommand,
 	},
 }
