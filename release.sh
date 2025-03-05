@@ -1,21 +1,66 @@
 #!/bin/bash
 
-semver_regex="^[0-9]+\.[0-9]+\.[0-9]+$"
+# Fetch latest tags
+git fetch --tags
+LAST=$(git describe --tags --abbrev=0)
 
-while true; do
-  read -rp "Enter a semantic version (e.g., 1.0.0): " version
+# Ensure LAST is a valid SemVer, default to v0.0.0 if no tags exist
+if ! [[ $LAST =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  LAST="v0.0.0"
+fi
 
-  if [[ $version =~ $semver_regex ]]; then
-    echo "Valid version: $version"
-    break
-  else
-    echo "Invalid version. Please enter a valid SemVer (x.y.z format)."
-  fi
-done
+# Extract major, minor, and patch numbers from the latest tag
+IFS='.' read -r MAJOR MINOR PATCH <<<"${LAST#v}"
 
+# Function to prompt for custom version
+custom() {
+  semver_regex="^v[0-9]+\.[0-9]+\.[0-9]+$"
+
+  while true; do
+    read -rp "Enter a semantic version (latest: $LAST): " VERSION
+
+    if [[ $VERSION =~ $semver_regex ]]; then
+      break
+    else
+      echo "Invalid version. Please enter a valid SemVer (vX.Y.Z format)."
+    fi
+  done
+}
+
+# Determine the next version based on the argument
+case "$1" in
+  major)
+    ((MAJOR++))
+    MINOR=0
+    PATCH=0
+    VERSION="v$MAJOR.$MINOR.$PATCH"
+    ;;
+  minor)
+    ((MINOR++))
+    PATCH=0
+    VERSION="v$MAJOR.$MINOR.$PATCH"
+    ;;
+  patch)
+    ((PATCH++))
+    VERSION="v$MAJOR.$MINOR.$PATCH"
+    ;;
+  custom)
+    custom
+    ;;
+  *)
+    echo "Usage: $0 {major|minor|patch|custom}"
+    exit 1
+    ;;
+esac
+
+# Show the version being tagged
+echo "Tagging new version: $VERSION"
+
+# Git commit and tag process
 git add --all
 git commit -a -m "chore: ci/cd"
-git tag v"$version"
+git tag "$VERSION"
 
+# Push changes and tag
 git push origin main
-git push origin v"$version"
+git push origin "$VERSION"
