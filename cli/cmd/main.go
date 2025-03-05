@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	if err := supasecure.supasecure.CLI.Run(os.Args); err != nil {
+	if err := supasecure.CLI.Run(os.Args); err != nil {
 		os.Exit(1)
 	}
 	os.Exit(0)
