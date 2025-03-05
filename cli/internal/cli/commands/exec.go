@@ -1,11 +1,15 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/fatih/color"
 	"github.com/google/uuid"
 	"github.com/train360-corp/supasecure/cli/internal/models"
 	"github.com/train360-corp/supasecure/cli/internal/utils/supabase"
 	"github.com/urfave/cli/v2"
+	"os"
+	"os/exec"
+	"strings"
 )
 
 var ExecCommand = &cli.Command{
@@ -19,6 +23,12 @@ var ExecCommand = &cli.Command{
 			Usage:    "the environment to execute the command against",
 			Required: true,
 		},
+		&cli.StringFlag{
+			Name:     "cmd",
+			Aliases:  []string{"c"},
+			Usage:    "the command to execute (ensure variable and string escaping if used)",
+			Required: true,
+		},
 		&cli.BoolFlag{
 			Name:        "verbose",
 			Usage:       "show verbose output",
@@ -28,6 +38,7 @@ var ExecCommand = &cli.Command{
 	},
 	Action: func(c *cli.Context) error {
 
+		command := c.String("cmd")
 		verbose := c.Bool("verbose")
 
 		uuid, err := uuid.Parse(c.String("env"))
@@ -67,11 +78,29 @@ var ExecCommand = &cli.Command{
 		}
 
 		if verbose {
+			color.Blue("Command: '%v'", command)
 			color.Blue("Environment: %v", environment.Display)
 			color.Blue("Workspace: %v", workspace.Display)
 			color.Blue("Secrets: %v", len(secrets))
 		}
 
+		// Define the command
+		cmd := exec.Command(command)
+
+		// Set custom environment variables
+		env := os.Environ()
+		for _, secret := range secrets {
+			env = append(env, fmt.Sprintf("%v=%v", secret.Variable, strings.TrimSpace(secret.Secret)))
+		}
+		cmd.Env = env
+
+		// run command
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			return cli.Exit(color.RedString(string(output)), 1)
+		}
+
+		fmt.Println(string(output))
 		return nil
 	},
 }
