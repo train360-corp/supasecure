@@ -13,8 +13,10 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-#      - windows
+      - windows
       - darwin
+    ldflags:
+      - "-X 'github.com/train360-corp/supasecure/internal.Version={{ .Tag }}'"
 
 changelog:
   use: github
@@ -72,7 +74,6 @@ brews:
     license: "MIT"
     test: |
       system "#{bin}/supasecure --version"
-      # ...
     repository:
       owner: train360-corp
       name: homebrew-taps
