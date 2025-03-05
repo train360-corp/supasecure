@@ -1,4 +1,4 @@
-module github.com/train360-corp/supasecure
+module github.com/train360-corp/supasecure/cli
 
 go 1.23.3
 
