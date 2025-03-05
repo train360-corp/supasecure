@@ -1,18 +1,45 @@
 package secrets
 
 import (
-	"github.com/train360-corp/supasecure/cli/internal/auth/secrets/shims"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/train360-corp/supasecure/cli/internal/models"
+	"github.com/zalando/go-keyring"
+)
+
+const (
+	Service = "supasecure"
+	Account = "supasecure@local"
 )
 
 func SetSecret(credentials *models.Credentials) error {
-	return shims.GetShim().SetSecret(credentials)
+	serialized, err := json.Marshal(credentials)
+	if err != nil {
+		return errors.New(fmt.Sprintf("error serializing secret: %v", err))
+	}
+
+	if err := keyring.Set(Service, Account, string(serialized)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func GetSecret() (*models.Credentials, error) {
-	return shims.GetShim().GetSecret()
+	secret, err := keyring.Get(Service, Account)
+	if err != nil {
+		return nil, err
+	}
+
+	var client models.Credentials
+	if err := json.Unmarshal([]byte(secret), &client); err != nil {
+		return nil, err
+	}
+	return &client, nil
+
 }
 
 func RemoveSecret() error {
-	return shims.GetShim().RemoveSecret()
+	return keyring.Delete(Service, Account)
 }
