@@ -36,6 +36,13 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
 
+      - uses: actions/checkout@v4
+
+      - name: install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq moreutils
+
       - uses: supabase/setup-cli@v1
         with:
           version: latest
@@ -43,4 +50,15 @@ jobs:
       - run: |
           supabase init
           supabase db start
-          supabase gen types --lang go > 
+
+      - name: update package.json version
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json | sponge package.json
+
+      - run: npm i
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTOMATION_KEY }}
