@@ -1,0 +1,32 @@
+{
+  "name": "@train360-corp/supasecure",
+  "version": "0.0.0",
+  "description": "TypeScript types for Supasecure",
+  "main": "index.js",
+  "module": "index.mjs",
+  "types": "index.d.ts",
+  "files": [
+    "index.*",
+    "gen.ts"
+  ],
+  "scripts": {
+    "build": "tsup index.ts && mv dist/* . && rmdir dist",
+    "supabase:types": "supabase gen types --lang typescript --local > ./gen.ts",
+    "prepublishOnly": "npm run supabase:types && npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/train360-corp/supasecure.git"
+  },
+  "author": "@train360-corp",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/train360-corp/supasecure/issues"
+  },
+  "homepage": "https://github.com/train360-corp/supasecure#readme",
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.47.10",
+    "tsup": "^8.4.0",
+    "typescript": "^5.8.2"
+  }
+}

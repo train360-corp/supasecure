@@ -9,8 +9,8 @@ import (
 )
 
 const (
-	Service = "supasecure"
-	Account = "supasecure@local"
+	Service = "web"
+	Account = "web@local"
 )
 
 func SetSecret(credentials *models.Credentials) error {

@@ -29,3 +29,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_REPO_SECRET: ${{ secrets.HOMEBREW_TAP_REPO_SECRET }}
+
+  types:
+    needs:
+      - goreleaser
+    runs-on: ubuntu-24.04
+    steps:
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - run: |
+          supabase init
+          supabase db start
+          supabase gen types --lang go > 
