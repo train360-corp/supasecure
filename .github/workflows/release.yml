@@ -59,4 +59,4 @@ jobs:
       - name: Publish to npm
         run: cd ./web && npm publish --access public
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTOMATION_KEY }}
+          NPM_TOKEN: ${{ secrets.NPM_AUTOMATION_KEY }}
