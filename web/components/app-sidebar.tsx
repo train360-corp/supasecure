@@ -1,6 +1,7 @@
-"use client"
+"use client";
 
-import * as React from "react"
+import * as React from "react";
+import { ComponentProps, useEffect, useState } from "react";
 import {
   AudioWaveform,
   BookOpen,
@@ -12,19 +13,17 @@ import {
   PieChart,
   Settings2,
   SquareTerminal,
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
-import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarHeader,
-  SidebarRail,
-} from "@/components/ui/sidebar"
+import { NavMain } from "@/components/nav-main";
+import { NavProjects } from "@/components/nav-projects";
+import { NavUser } from "@/components/nav-user";
+import { TeamSwitcher } from "@/components/team-switcher";
+import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail, } from "@/components/ui/sidebar";
+import { Row } from "@train360-corp/supasecure";
+import { createClient } from "@/lib/supabase/clients/browser";
+import { toast } from "sonner";
+import { RealtimeChannel } from "@supabase/realtime-js";
 
 // This is sample data.
 const data = {
@@ -154,22 +153,62 @@ const data = {
       icon: Map,
     },
   ],
-}
+};
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ ..._props }: ComponentProps<typeof Sidebar> & {
+  open: boolean;
+}) {
+
+  const { open, ...props } = _props;
+  const supabase = createClient();
+  const [ teams, setTeams ] = useState<readonly Row<"tenants">[]>();
+  const [ preferences, setPreferences ] = useState<Row<"preferences">>();
+
+  useEffect(() => {
+
+    let prefSub: RealtimeChannel | null = null;
+
+    supabase.from("tenants").select().then(({ data, error }) => {
+      if (error) toast.error("Unable to Load Teams!", {
+        description: error.message,
+      });
+      else setTeams(data);
+    });
+
+    supabase.from("preferences").select().single().then(async ({ data, error }) => {
+      if (error) toast.error("Unable to Load Preferences!", {
+        description: error.message,
+      });
+      else {
+        setPreferences(data);
+        prefSub = supabase.channel(data.id).on("postgres_changes", {
+          schema: "public",
+          event: "*"
+        }, (cb) => {
+          setPreferences((!!cb.new && "id" in cb.new && !!cb.new.id) ? cb.new as Row<"preferences"> : undefined);
+        }).subscribe();
+      }
+    });
+
+    return () => {
+      prefSub?.unsubscribe();
+    };
+
+  }, []);
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
-        <TeamSwitcher teams={data.teams} />
+        <TeamSwitcher preferences={preferences} teams={teams} open={open}/>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain items={data.navMain}/>
+        <NavProjects projects={data.projects}/>
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={data.user}/>
       </SidebarFooter>
-      <SidebarRail />
+      <SidebarRail/>
     </Sidebar>
-  )
+  );
 }
