@@ -52,11 +52,11 @@ jobs:
       - name: update package.json version
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          jq --arg VERSION "$VERSION" '.version = $VERSION' package.json | sponge package.json
+          jq --arg VERSION "$VERSION" '.version = $VERSION' ./web/package.json | sponge ./web/package.json
 
-      - run: npm i
+      - run: cd ./web && npm i
 
       - name: Publish to npm
-        run: npm publish --access public
+        run: cd ./web && npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_AUTOMATION_KEY }}
