@@ -15,8 +15,7 @@ import {
   SquareTerminal,
 } from "lucide-react";
 
-import { NavMain } from "@/components/nav-main";
-import { NavProjects } from "@/components/nav-projects";
+import { NavWorkspaces } from "@/components/nav-workspaces";
 import { NavUser } from "@/components/nav-user";
 import { TeamSwitcher } from "@/components/team-switcher";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail, } from "@/components/ui/sidebar";
@@ -163,14 +162,10 @@ export function AppSidebar({ ..._props }: ComponentProps<typeof Sidebar> & {
   const supabase = createClient();
   const [ teams, setTeams ] = useState<readonly Row<"tenants">[]>();
   const [ preferences, setPreferences ] = useState<Row<"preferences">>();
-  const [workspaces, setWorkspaces] = useState<readonly (Row<"workspaces"> & {
-    environments: readonly Row<"environments">[]
-  })[]>();
+  const [ workspaces, setWorkspaces ] = useState<readonly Row<"workspaces">[]>();
+  const [ membership, setMembership ] = useState<Row<"memberships">>();
 
   useEffect(() => {
-
-    let prefSub: RealtimeChannel | null = null;
-
     supabase.from("tenants").select().then(({ data, error }) => {
       if (error) toast.error("Unable to Load Teams!", {
         description: error.message,
@@ -184,26 +179,68 @@ export function AppSidebar({ ..._props }: ComponentProps<typeof Sidebar> & {
       });
       else {
         setPreferences(data);
-        prefSub = supabase.channel(data.id).on("postgres_changes", {
+        supabase.channel(data.id).on("postgres_changes", {
           schema: "public",
-          event: "*"
+          event: "*",
+          table: "preferences",
+          filter: `id=eq.${data.id}`
         }, (cb) => {
           setPreferences((!!cb.new && "id" in cb.new && !!cb.new.id) ? cb.new as Row<"preferences"> : undefined);
         }).subscribe();
       }
     });
 
-    return () => {
-      prefSub?.unsubscribe();
-    };
-
   }, []);
 
-  // load workspaces for current/active tenant
   useEffect(() => {
-    if(preferences && preferences.active_tenant_id) supabase.from("workspaces").select().eq("")
-    else setWorkspaces(undefined);
-  }, [preferences?.id]);
+
+    // load membership
+    if (preferences && preferences.active_tenant_id) supabase
+      .from("memberships")
+      .select()
+      .eq("tenant_id", preferences.active_tenant_id)
+      .eq("user_id", preferences.id)
+      .single()
+      .then(async ({ data, error }) => {
+        if (error || !data) {
+          toast.error("Unable to Load Membership!", {
+            description: error?.message ?? "No data was returned",
+          });
+          setMembership(undefined);
+        } else setMembership(data);
+      });
+    else setMembership(undefined);
+
+    const getWorkspaces = (id: string) => supabase
+      .from("workspaces")
+      .select()
+      .eq("tenant_id", id)
+      .order("created_at")
+      .then(async ({ data, error }) => {
+        if (error || !data) {
+          toast.error("Unable to Load Workspaces!", {
+            description: error?.message ?? "No data was returned",
+          });
+          setWorkspaces(undefined);
+        } else {
+          setWorkspaces(data);
+        }
+      });
+
+    // load workspaces for current/active tenant
+    if (!!preferences && !!preferences.active_tenant_id) {
+      getWorkspaces(preferences.active_tenant_id).then();
+      supabase.channel(`tenant-${preferences.active_tenant_id}-workspaces-${preferences.id}`).on("postgres_changes", {
+        schema: "public",
+        event: "*",
+        table: "workspaces",
+        // filter: `tenant_id=eq.${preferences.active_tenant_id}`
+      }, () => {
+        if (preferences?.active_tenant_id) getWorkspaces(preferences.active_tenant_id).then();
+      }).subscribe();
+    } else setWorkspaces(undefined);
+
+  }, [ preferences?.id, preferences?.active_tenant_id ]);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -211,8 +248,7 @@ export function AppSidebar({ ..._props }: ComponentProps<typeof Sidebar> & {
         <TeamSwitcher preferences={preferences} teams={teams} open={open}/>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain}/>
-        <NavProjects projects={data.projects}/>
+        <NavWorkspaces membership={membership} workspaces={workspaces} preferences={preferences}/>
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user}/>

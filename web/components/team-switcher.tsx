@@ -16,7 +16,6 @@ import { Row } from "@train360-corp/supasecure";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { createClient } from "@/lib/supabase/clients/browser";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 
 
@@ -90,7 +89,7 @@ export function TeamSwitcher({ teams, open, preferences }: {
               >
                 <div
                   className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Building />
+                  <Building/>
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{activeTeam.display}</span>
