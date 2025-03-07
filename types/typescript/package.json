@@ -18,6 +18,9 @@
     "type": "git",
     "url": "git+https://github.com/train360-corp/supasecure.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "author": "@train360-corp",
   "license": "MIT",
   "bugs": {
