@@ -163,6 +163,9 @@ export function AppSidebar({ ..._props }: ComponentProps<typeof Sidebar> & {
   const supabase = createClient();
   const [ teams, setTeams ] = useState<readonly Row<"tenants">[]>();
   const [ preferences, setPreferences ] = useState<Row<"preferences">>();
+  const [workspaces, setWorkspaces] = useState<readonly (Row<"workspaces"> & {
+    environments: readonly Row<"environments">[]
+  })[]>();
 
   useEffect(() => {
 
@@ -195,6 +198,12 @@ export function AppSidebar({ ..._props }: ComponentProps<typeof Sidebar> & {
     };
 
   }, []);
+
+  // load workspaces for current/active tenant
+  useEffect(() => {
+    if(preferences && preferences.active_tenant_id) supabase.from("workspaces").select().eq("")
+    else setWorkspaces(undefined);
+  }, [preferences?.id]);
 
   return (
     <Sidebar collapsible="icon" {...props}>

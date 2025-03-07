@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ChevronsUpDown, CloudAlert, Plus } from "lucide-react";
+import { Building, ChevronsUpDown, CloudAlert, Plus } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -16,6 +16,7 @@ import { Row } from "@train360-corp/supasecure";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { createClient } from "@/lib/supabase/clients/browser";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 
 
@@ -52,7 +53,7 @@ export function TeamSwitcher({ teams, open, preferences }: {
 
   const isMobile = useIsMobile();
   const supabase = createClient();
-  const activeTeam = teams?.find(team => team.id === preferences?.active_workspace_id);
+  const activeTeam = teams?.find(team => team.id === preferences?.active_tenant_id);
 
   if (teams === undefined) return (
     <TeamSwitcherSkeleton sidebarOpen={open}/>
@@ -87,10 +88,10 @@ export function TeamSwitcher({ teams, open, preferences }: {
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                {/*<div*/}
-                {/*  className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">*/}
-                {/*  <activeTeam.logo className="size-4"/>*/}
-                {/*</div>*/}
+                <div
+                  className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <Building />
+                </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
                   <span className="truncate font-medium">{activeTeam.display}</span>
                   <span className="truncate text-xs">{activeTeam.id}</span>
@@ -110,8 +111,9 @@ export function TeamSwitcher({ teams, open, preferences }: {
             </DropdownMenuLabel>
             {teams.map((team) => (
               <DropdownMenuItem
+                disabled={team.id === activeTeam?.id}
                 key={team.id}
-                onClick={async () => await supabase.from("preferences").update({ active_workspace_id: team.id }).eq("id", preferences!.id).single()}
+                onClick={async () => await supabase.from("preferences").update({ active_tenant_id: team.id }).eq("id", preferences!.id).single()}
                 className="gap-2 p-2"
               >
                 {/*<div className="flex size-6 items-center justify-center rounded-xs border">*/}

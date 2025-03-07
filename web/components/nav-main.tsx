@@ -1,12 +1,8 @@
-"use client"
+"use client";
 
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import { ChevronRight, Network } from "lucide-react";
 
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+import { Collapsible, CollapsibleContent, CollapsibleTrigger, } from "@/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -16,39 +12,35 @@ import {
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
+} from "@/components/ui/sidebar";
+import { Row } from "@train360-corp/supasecure";
 
-export function NavMain({
-  items,
-}: {
-  items: {
-    title: string
-    url: string
-    icon?: LucideIcon
-    isActive?: boolean
-    items?: {
-      title: string
-      url: string
-    }[]
-  }[]
+
+
+export function NavMain({ workspaces, preferences }: {
+  workspaces: readonly (Row<"workspaces"> & {
+    environments: readonly Row<"environments">[]
+  })[] | undefined;
+  preferences: Row<"preferences"> | undefined;
 }) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Platform</SidebarGroupLabel>
+      <SidebarGroupLabel>Workspaces</SidebarGroupLabel>
       <SidebarMenu>
-        {items.map((item) => (
+        {workspaces?.map((item) => (
           <Collapsible
-            key={item.title}
+            key={item.id}
             asChild
-            defaultOpen={item.isActive}
+            defaultOpen={item.id === preferences?.id}
             className="group/collapsible"
           >
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
-                <SidebarMenuButton tooltip={item.title}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                <SidebarMenuButton tooltip={item.display}>
+                  <Network />
+                  <span>{item.display}</span>
+                  <ChevronRight
+                    className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90"/>
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
@@ -69,5 +61,5 @@ export function NavMain({
         ))}
       </SidebarMenu>
     </SidebarGroup>
-  )
+  );
 }

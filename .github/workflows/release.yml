@@ -57,7 +57,7 @@ jobs:
       - name: update package.json version
         run: |
           VERSION=${GITHUB_REF_NAME#v}
-          jq --arg VERSION "$VERSION" '.version = $VERSION' ./types/typescript/package.json | sponge ./web/package.json
+          jq --arg VERSION "$VERSION" '.version = $VERSION' ./types/typescript/package.json | sponge ./types/typescript/package.json
 
       - run: cd ./types/typescript && npm i
 
