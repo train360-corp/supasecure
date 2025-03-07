@@ -47,9 +47,7 @@ jobs:
         with:
           version: latest
 
-      - run: |
-          supabase init
-          supabase db start
+      - run: supabase db start
 
       - name: update package.json version
         run: |
