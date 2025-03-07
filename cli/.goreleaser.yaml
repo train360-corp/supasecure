@@ -1,13 +1,13 @@
 version: 2
 
-project_name: web
+project_name: supasecure
 
 before:
   hooks:
     - go mod tidy
 
 builds:
-  - id: web
+  - id: supasecure
     main: ./cmd
     env:
       - CGO_ENABLED=0
@@ -16,7 +16,7 @@ builds:
       - windows
       - darwin
     ldflags:
-      - -s -w -X github.com/train360-corp/web/cli/internal.Version={{.Version}}
+      - -s -w -X github.com/train360-corp/supasecure/cli/internal.Version={{.Version}}
 
 changelog:
   use: github
@@ -48,7 +48,7 @@ archives:
 release:
   github:
     owner: train360-corp
-    name: web
+    name: supasecure
 
   footer: >-
 
@@ -57,7 +57,7 @@ release:
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
 brews:
-  - name: web
+  - name: supasecure
     download_strategy: CurlDownloadStrategy
     url_template: "https://github.com/train360-corp/supasecure/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     url_headers:
@@ -68,7 +68,7 @@ brews:
       email: bot@goreleaser.com
     commit_msg_template: "feat: brew formula update for {{ .ProjectName }} version {{ .Tag }}"
     directory: Formula
-    caveats: "web --help"
+    caveats: "supasecure --help"
     homepage: "https://github.com/train360-corp/supasecure"
     description: "CLI for interacting with a Supasecure instance."
     license: "MIT"

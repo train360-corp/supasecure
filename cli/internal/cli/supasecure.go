@@ -7,7 +7,7 @@ import (
 )
 
 var CLI = &cli.App{
-	Name:    "web",
+	Name:    "supasecure",
 	Usage:   "A Supabase-backed keystore",
 	Version: internal.Version,
 	Commands: []*cli.Command{
