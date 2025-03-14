@@ -109,9 +109,8 @@ var AuthCommand = &cli.Command{
 					DefaultText: DEFAULT_ANON_KEY,
 				},
 				&cli.StringFlag{
-					Name:        "password",
-					Usage:       "the password address of the client to authenticate with",
-					DefaultText: DEFAULT_ANON_KEY,
+					Name:  "password",
+					Usage: "the password of the client to authenticate with",
 				},
 			},
 			Action: func(c *cli.Context) error {

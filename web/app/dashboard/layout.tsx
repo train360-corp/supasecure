@@ -6,6 +6,7 @@ import { SidebarInset, SidebarProvider, SidebarTrigger, } from "@/components/ui/
 import { ReactNode } from "react";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { ModeToggle } from "@/components/mode-toggle";
+import {createClient} from "@/lib/supabase/clients/browser";
 
 
 
@@ -15,10 +16,14 @@ export default function Page({ children }: {
 
   const [ open, setOpen ] = useLocalStorage<boolean>("SIDEBAR_OPEN", true);
 
+  const supabase = createClient()
+
+  supabase.auth.getSession().then(console.log)
+
   return (
     <SidebarProvider open={open} onOpenChange={setOpen}>
       <AppSidebar open={open} />
-      <SidebarInset>
+      <SidebarInset className={"w-full overflow-auto"}>
         <header
           className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
@@ -34,7 +39,7 @@ export default function Page({ children }: {
             />
           </div>
         </header>
-        <div className="w-full max-w-full overflow-y-auto">
+        <div className="w-full h-full overflow-y-auto">
           {children}
         </div>
       </SidebarInset>

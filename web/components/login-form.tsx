@@ -79,7 +79,7 @@ export function LoginForm({
                         <FormLabel>{"Password"}</FormLabel>
                         <FormControl>
                           <Input disabled={form.formState.isSubmitting} type={"password"}
-                                 placeholder="me@example.com" {...field} />
+                                 placeholder="super-secret-password" {...field} />
                         </FormControl>
                         <FormMessage/>
                       </FormItem>
