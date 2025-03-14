@@ -1,6 +1,18 @@
 # supasecure
 
-## Getting Started
+## Server
+
+### Getting Started
+
+Via Docker:
+
+```shell
+docker run 
+```
+
+## CLI
+
+### Getting Started
 
 Install via Homebrew:
 
@@ -9,6 +21,6 @@ brew tap train360-corp/taps/supasecure
 brew install train360-corp/taps/supasecure
 ```
 
-## Updating
+### Updating
 
 Via Homebrew: `brew upgrade supasecure`
