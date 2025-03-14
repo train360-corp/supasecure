@@ -48,17 +48,24 @@ case "$1" in
     custom
     ;;
   *)
-    echo "Usage: $0 {major|minor|patch|custom}"
+    echo "Usage: $0 {major|minor|patch|custom} [commit message]"
     exit 1
     ;;
 esac
+
+# Determine commit message
+if [[ -n "$2" ]]; then
+  COMMIT_MSG="$2"
+else
+  read -rp "Enter commit message: " COMMIT_MSG
+fi
 
 # Show the version being tagged
 echo "Tagging new version: $VERSION"
 
 # Git commit and tag process
 git add --all
-git commit -a -m "chore: ci/cd"
+git commit -a -m "$COMMIT_MSG"
 git tag "$VERSION"
 
 # Push changes and tag

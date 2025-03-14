@@ -1,6 +1,8 @@
 set check_function_bodies = off;
 
-CREATE OR REPLACE FUNCTION public.create_client(environment_id uuid)
+DROP FUNCTION public.create_client;
+
+CREATE FUNCTION public.create_client(environment_id uuid)
  RETURNS TABLE(email text, secret text)
  LANGUAGE plpgsql
 AS $function$DECLARE
