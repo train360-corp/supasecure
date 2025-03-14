@@ -52,6 +52,7 @@ func (c *SupabaseClient) Authenticate() (bool, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.credentials.Supabase.Keys.Anon)
 	req.Header.Set("apikey", c.credentials.Supabase.Keys.Anon)
+	req.Header.Set("X-JWT-AUD", string(c.credentials.Type))
 
 	// Send the request
 	client := &http.Client{}

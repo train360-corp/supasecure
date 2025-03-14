@@ -39,21 +39,18 @@ var AuthCommand = &cli.Command{
 				}
 
 				verify := c.Bool("verify")
-				var verified bool
+				var verifiedErr error
 				if verify {
 					client, clientErr := supabase.GetClient()
 					defer client.Close()
 					if clientErr != nil {
 						return cli.Exit(color.RedString("verification failed - an error occurred while creating a client: %s", clientErr.Error()), 1)
 					} else {
-						v, err := client.Authenticate()
-						verified = v
-						if err != nil {
-							return cli.Exit(color.RedString("verification failed - an error occurred during authentication: %s", err.Error()), 1)
-						}
+						_, verifiedErr = client.Authenticate()
 					}
 				}
 
+				color.Blue("    type: %s", secret.Type)
 				color.Blue("   email: %s", secret.Email)
 				if secret.Password != "" {
 					color.Blue("password: %s", strings.Repeat("*", len(secret.Password)))
@@ -66,10 +63,10 @@ var AuthCommand = &cli.Command{
 
 				if verify {
 					print(color.BlueString("verified: "))
-					if verified {
+					if verifiedErr == nil {
 						color.Green("✓")
 					} else {
-						color.Red("failed")
+						color.Red(verifiedErr.Error())
 					}
 				}
 
@@ -93,6 +90,20 @@ var AuthCommand = &cli.Command{
 			Description: "save authentication credentials",
 			Usage:       "save authentication credentials",
 			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "type",
+					Required: true,
+					Aliases:  []string{"t"},
+					Usage:    "whether to login as a service 'client' or an 'authenticated' user",
+					Action: func(context *cli.Context, s string) error {
+						_, err := models.GetUserType(s)
+						if err != nil {
+							return cli.Exit(color.RedString(err.Error()), 1)
+						} else {
+							return nil
+						}
+					},
+				},
 				&cli.StringFlag{
 					Name:    "email",
 					Aliases: []string{"u"},
@@ -123,6 +134,7 @@ var AuthCommand = &cli.Command{
 					return cli.Exit(color.RedString("invalid email address: %s", email), 1)
 				}
 
+				aud, _ := models.GetUserType(c.String("type")) // this is validated in the flag action
 				pass, _ := cmdutil.Prompt(c, "password")
 				url, _ := cmdutil.PromptWithDefault(c, "url", DEFAULT_SERVER_URL)
 				anon, _ := cmdutil.PromptWithDefault(c, "anon", DEFAULT_ANON_KEY)
@@ -130,6 +142,7 @@ var AuthCommand = &cli.Command{
 				err := secrets.SetSecret(&models.Credentials{
 					Email:    email,
 					Password: pass,
+					Type:     aud,
 					Supabase: models.SupabaseDetails{
 						Url: url,
 						Keys: models.SupabaseKeys{

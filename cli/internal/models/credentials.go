@@ -12,5 +12,6 @@ type SupabaseDetails struct {
 type Credentials struct {
 	Email    string          `json:"email"`
 	Password string          `json:"password"`
+	Type     UserTypes       `json:"type"`
 	Supabase SupabaseDetails `json:"supabase"`
 }
