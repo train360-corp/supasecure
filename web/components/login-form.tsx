@@ -1,5 +1,5 @@
 "use client";
-import { cn } from "@/lib/utils";
+import { cn, sleep } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -53,6 +53,7 @@ export function LoginForm({
                 });
               }
               router.push("/dashboard");
+              await sleep(10000); // hold so the form stays loading
             })}>
               <div className="flex flex-col gap-6">
                 <div className="grid gap-3">

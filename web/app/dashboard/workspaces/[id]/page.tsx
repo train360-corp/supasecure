@@ -70,7 +70,7 @@ const CreateEnvDialog = (props: {
     }}>
       <DialogTrigger onClick={() => setOpen(true)} asChild>
         <Button
-          className={"w-full min-w-[250px]"}
+          className={"w-[250px]"}
           variant={"ghost"}
           size={"icon"}
         >
@@ -242,9 +242,8 @@ export default function Page() {
             <TableRow>
               <TableHead/>
               {environments.result?.data?.map(env => (
-                <TableHead key={`Head:${env.id}`}>
-                  <div className={"flex flex-row items-center gap-2"}>
-                    <p>{env.display}</p>
+                <TableHead className={"align-middle items-center"} key={`Head:${env.id}`}>
+                  <div className="flex w-[250px] flex-row items-center justify-center gap-2">                    <p>{env.display}</p>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size={"icon"} className="p-0">
