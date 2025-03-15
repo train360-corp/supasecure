@@ -22,7 +22,6 @@ import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail, } f
 import { Row } from "@train360-corp/supasecure";
 import { createClient } from "@/lib/supabase/clients/browser";
 import { toast } from "sonner";
-import { RealtimeChannel } from "@supabase/realtime-js";
 
 // This is sample data.
 const data = {

@@ -1,12 +1,11 @@
 "use client";
 
-import { Folder, Forward, MoreHorizontal, Network, Plus, Trash2, } from "lucide-react";
+import { MoreHorizontal, Network, Plus, Trash2, } from "lucide-react";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -45,7 +44,7 @@ export function NavWorkspaces({ workspaces, preferences, membership }: {
           <SidebarMenuItem key={item.id}>
             <SidebarMenuButton asChild>
               <Link href={`/dashboard/workspaces/${item.id}`}>
-                <Network />
+                <Network/>
                 <span>{item.display}</span>
               </Link>
             </SidebarMenuButton>
@@ -70,11 +69,12 @@ export function NavWorkspaces({ workspaces, preferences, membership }: {
                 {/*  <span>Share Project</span>*/}
                 {/*</DropdownMenuItem>*/}
                 {/*<DropdownMenuSeparator/>*/}
-                <DropdownMenuItem onClick={() => supabase.from("workspaces").delete().eq("id", item.id).then(({error}) => {
-                  if (error) toast.error("Unable to Delete Workspace!", {
-                    description: error.message,
-                  });
-                })}>
+                <DropdownMenuItem
+                  onClick={() => supabase.from("workspaces").delete().eq("id", item.id).then(({ error }) => {
+                    if (error) toast.error("Unable to Delete Workspace!", {
+                      description: error.message,
+                    });
+                  })}>
                   <Trash2 className="text-muted-foreground"/>
                   <span>{"Delete Workspace"}</span>
                 </DropdownMenuItem>
@@ -87,10 +87,10 @@ export function NavWorkspaces({ workspaces, preferences, membership }: {
             disabled={membership?.type !== "ADMIN"}
             className="text-sidebar-foreground/70"
             onClick={async () => {
-              const {error} = await supabase.from("workspaces").insert({
+              const { error } = await supabase.from("workspaces").insert({
                 display: "New Workspace",
                 tenant_id: preferences!.active_tenant_id!
-              })
+              });
               if (error) toast.error("Unable to Create Workspace!", {
                 description: error.message,
               });
