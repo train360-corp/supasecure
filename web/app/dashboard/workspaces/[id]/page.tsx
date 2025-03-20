@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/table";
 import { useRealtimeData } from "@/lib/supabase/realtime";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Plus } from "lucide-react";
+import { EyeIcon, MoreHorizontal, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/clients/browser";
 import { toast } from "sonner";
 import {
@@ -35,8 +35,10 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import {
   DropdownMenu,
-  DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuLabel, DropdownMenuSeparator,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 
@@ -208,6 +210,26 @@ const CreateVarDialog = (props: {
 };
 
 
+const SecretCell = ({ secret }: {
+  secret: Row<"secrets"> | undefined;
+}) => {
+
+  const [value, setValue] = useState<string | null | undefined>();
+  const [visible, setVisible] = useState<boolean>(false);
+
+  return (
+    <TableCell className={"flex flex-row align-middle justify-center items-center h-full gap-2"}>
+      {visible ? (<></>) : (
+        <p className={"text-muted text-lg"}>{"••••••••••••••••"}</p>
+      )}
+      <Button onClick={() => setVisible(visible => !visible)} variant="ghost" size={"icon"} className="p-0">
+        <EyeIcon />
+      </Button>
+    </TableCell>
+  );
+};
+
+
 export default function Page() {
 
   const { id }: { id: string } = useParams();
@@ -243,7 +265,7 @@ export default function Page() {
               <TableHead/>
               {environments.result?.data?.map(env => (
                 <TableHead className={"align-middle items-center"} key={`Head:${env.id}`}>
-                  <div className="flex w-[250px] flex-row items-center justify-center gap-2">                    <p>{env.display}</p>
+                  <div className="flex w-[250px] flex-row items-center justify-center gap-2"><p>{env.display}</p>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size={"icon"} className="p-0">
@@ -261,7 +283,7 @@ export default function Page() {
                         <DropdownMenuSeparator/>
                         <DropdownMenuItem>Rename</DropdownMenuItem>
                         <DropdownMenuItem
-                          onClick={() => supabase.from("environments").delete().eq("id", env.id).then(({error}) => {
+                          onClick={() => supabase.from("environments").delete().eq("id", env.id).then(({ error }) => {
                             if (error) toast.error("Unable to Delete Environment!", {
                               description: error.message,
                             });
@@ -288,7 +310,7 @@ export default function Page() {
                   <TableCell className={"max-w-[150px]"}>
                     <div className={"flex flex-row items-center"}>
                       <p className={"font-medium truncate"}>{v.display}</p>
-                      <div className={"flex-1"} />
+                      <div className={"flex-1"}/>
                       <Button variant="ghost" size={"icon"} className="p-0">
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal/>
@@ -296,9 +318,10 @@ export default function Page() {
                     </div>
                   </TableCell>
                   {environments.result?.data?.map(env => (
-                    <TableCell key={`${v.id}:${env.id}`}>
-                      {secrets.result?.data?.find(s => s.environment_id === env.id && s.variable_id === v.id)?.id}
-                    </TableCell>
+                    <SecretCell
+                      key={`${v.id}:${env.id}`}
+                      secret={secrets.result?.data?.find(s => s.environment_id === env.id && s.variable_id === v.id)}
+                    />
                   ))}
                   <TableCell/>
                 </TableRow>
