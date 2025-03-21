@@ -13,5 +13,6 @@ var CLI = &cli.App{
 	Commands: []*cli.Command{
 		commands.AuthCommand,
 		commands.ExecCommand,
+		commands.ServerCommand,
 	},
 }
