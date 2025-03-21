@@ -64,12 +64,12 @@ var ServerCommand = &cli.Command{
 
 				// validate in flag handler
 				origin := c.String("origin")
-				
+
 				var err error
 				var installer installers.Installer
 
 				// get installer
-				if installer, err = installers.GetInstaller(); err != nil {
+				if installer, err = installers.GetInstaller(origin); err != nil {
 					return err
 				}
 
