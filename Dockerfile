@@ -42,6 +42,3 @@ ENV WEB_HOSTNAME="0.0.0.0"
 ENV WEB_PORT=3030
 ENV WEB_NODE_ENV=production
 ENV WEB_NEXT_TELEMETRY_DISABLED=1
-
-# set the shell
-SHELL ["/bin/bash", "-ec"]
