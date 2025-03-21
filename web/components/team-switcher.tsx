@@ -16,6 +16,7 @@ import { Row } from "@train360-corp/supasecure";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { createClient } from "@/lib/supabase/clients/browser";
+import { useDebounce } from "use-debounce";
 
 
 
@@ -45,8 +46,8 @@ const TeamSwitcherSkeleton = (props: {
 };
 
 export function TeamSwitcher({ teams, open, preferences }: {
-  teams: readonly Row<"tenants">[] | undefined;
-  preferences: Row<"preferences"> | undefined;
+  teams: readonly Row<"tenants">[] | null | undefined;
+  preferences: Row<"preferences">;
   open: boolean;
 }) {
 
@@ -54,7 +55,9 @@ export function TeamSwitcher({ teams, open, preferences }: {
   const supabase = createClient();
   const activeTeam = teams?.find(team => team.id === preferences?.active_tenant_id);
 
-  if (teams === undefined) return (
+  const loadingPredicate = teams === undefined || teams === null;
+  const [loading] = useDebounce(loadingPredicate, 500);
+  if (loading || loadingPredicate) return (
     <TeamSwitcherSkeleton sidebarOpen={open}/>
   );
 

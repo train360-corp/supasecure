@@ -5,9 +5,9 @@ import SupabaseBrowserProvider from "@/lib/supabase/providers/SupabaseBrowserPro
 
 
 
-const SupabaseProvider = ({ children }: {
+export default async function SupabaseServerProvider({ children }: {
   children: ReactNode;
-}) => {
+}) {
   const supabaseUrl = process.env.SUPABASE_URL;
   const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
 
@@ -22,5 +22,3 @@ const SupabaseProvider = ({ children }: {
   );
 
 };
-
-export default SupabaseProvider;

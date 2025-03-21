@@ -26,9 +26,9 @@ import { toast } from "sonner";
 
 
 export function NavWorkspaces({ workspaces, preferences, membership }: {
-  workspaces: readonly Row<"workspaces">[] | undefined;
-  preferences: Row<"preferences"> | undefined;
-  membership: Row<"memberships"> | undefined;
+  workspaces: readonly Row<"workspaces">[] | null | undefined;
+  preferences: Row<"preferences"> | null | undefined;
+  membership: Row<"memberships"> | null | undefined;
 }) {
 
   const { isMobile } = useSidebar();
@@ -38,7 +38,7 @@ export function NavWorkspaces({ workspaces, preferences, membership }: {
     <SidebarGroup className="group-data-[collapsible=icon]:hidden">
       <SidebarGroupLabel>{"Workspaces"}</SidebarGroupLabel>
       <SidebarMenu>
-        {workspaces === undefined ? (
+        {workspaces === undefined || workspaces === null ? (
           <Skeleton/>
         ) : workspaces.map((item) => (
           <SidebarMenuItem key={item.id}>
@@ -82,24 +82,28 @@ export function NavWorkspaces({ workspaces, preferences, membership }: {
             </DropdownMenu>
           </SidebarMenuItem>
         ))}
-        <SidebarMenuItem>
-          <SidebarMenuButton
-            disabled={membership?.type !== "ADMIN"}
-            className="text-sidebar-foreground/70"
-            onClick={async () => {
-              const { error } = await supabase.from("workspaces").insert({
-                display: "New Workspace",
-                tenant_id: preferences!.active_tenant_id!
-              });
-              if (error) toast.error("Unable to Create Workspace!", {
-                description: error.message,
-              });
-            }}
-          >
-            <Plus className="text-sidebar-foreground/70"/>
-            <span>{"New"}</span>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
+
+        {membership?.type === "ADMIN" && (
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              disabled={membership?.type !== "ADMIN"}
+              className="text-sidebar-foreground/70"
+              onClick={async () => {
+                const { error } = await supabase.from("workspaces").insert({
+                  display: "New Workspace",
+                  tenant_id: preferences!.active_tenant_id!
+                });
+                if (error) toast.error("Unable to Create Workspace!", {
+                  description: error.message,
+                });
+              }}
+            >
+              <Plus className="text-sidebar-foreground/70"/>
+              <span>{"New"}</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        )}
+
       </SidebarMenu>
     </SidebarGroup>
   );
