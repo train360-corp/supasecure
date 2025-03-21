@@ -1,5 +1,5 @@
 [Unit]
-Description=Supasecure Server
+Description=Supasecure Server v0.0.0
 After=docker.service
 Requires=docker.service
 
