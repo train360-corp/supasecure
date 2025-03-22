@@ -30,6 +30,18 @@ changelog:
     - title: Others
       order: 999
 
+nfpms:
+  - vendor: Train360, Corp.
+    description: Supasecure CLI {{.Version}}
+    maintainer: Train360, Corp.
+    homepage: https://github.com/train360-corp/supasecure
+    license: MIT
+    formats:
+      - apk
+      - deb
+      - rpm
+      - archlinux
+
 archives:
   - formats: [ tar.gz ]
     # this name template makes the OS and Arch compatible with the results of `uname`.
