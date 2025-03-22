@@ -68,6 +68,12 @@ release:
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
 
+publishers:
+  - name: PPA Repository
+    dir: "{{ dir .ArtifactPath }}"
+    cmd: |
+      ls -la
+
 brews:
   - name: supasecure
     download_strategy: CurlDownloadStrategy
