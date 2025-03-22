@@ -69,6 +69,10 @@ jobs:
             echo "Copying $src_path to $dest_path"
             cp "$src_path" "$dest_path"
           done
+          
+          ppa-repo/update.sh
+        with:
+          KEY: ${{ secrets.KEY }}
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v7.0.8
