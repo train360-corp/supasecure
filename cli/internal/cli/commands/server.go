@@ -96,11 +96,6 @@ var ServerCommand = &cli.Command{
 					return err
 				}
 
-				// link
-				if err := installer.LinkBinaryOrService(); err != nil {
-					return err
-				}
-
 				return nil
 			},
 		},

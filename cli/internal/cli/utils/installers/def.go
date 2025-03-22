@@ -11,7 +11,6 @@ type Installer interface {
 	IsDockerInstalled() bool
 	InstallDocker() error
 	SetupDirectory() error
-	LinkBinaryOrService() error
 }
 
 func GetInstaller(origin string) (Installer, error) {

@@ -12,9 +12,6 @@ import (
 	"strings"
 )
 
-//go:embed supasecure.service
-var serviceFile []byte
-
 type Installer struct {
 	origin string
 }
@@ -87,27 +84,6 @@ func (i *Installer) SetupDirectory() error {
 	err := supabase.WriteConfig(fmt.Sprintf("%s/cfg.env", path), supabase.GetConfig(i.origin))
 	if err != nil {
 		return cli.Exit(color.RedString("unable to write config file to installation directory"), 1)
-	}
-
-	return nil
-}
-
-func (i *Installer) LinkBinaryOrService() error {
-
-	filepath := "/etc/systemd/system/supasecure.service"
-
-	if utils.IsFile(filepath) {
-		if err := os.Remove(filepath); err != nil {
-			return cli.Exit(color.RedString("unable to remove old supasecure.service file"), 1)
-		}
-	}
-
-	if err := os.WriteFile(filepath, serviceFile, 0644); err != nil {
-		return cli.Exit(color.RedString("unable to create service file"), 1)
-	}
-
-	if !utils.IsFile(filepath) {
-		return cli.Exit(color.RedString("unable to verify service file"), 1)
 	}
 
 	return nil
