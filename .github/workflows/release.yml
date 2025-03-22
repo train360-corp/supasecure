@@ -19,11 +19,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Fix Linux service file version
-        run: |
-          sed -i "s/v0\.0\.0/${GITHUB_REF_NAME}/g" cli/internal/cli/utils/installers/linux/supasecure.service
-          cat cli/internal/cli/utils/installers/linux/supasecure.service
-
       - uses: actions/setup-go@v5
 
       - name: Run GoReleaser
