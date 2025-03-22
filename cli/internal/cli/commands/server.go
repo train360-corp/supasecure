@@ -53,7 +53,9 @@ var ServerCommand = &cli.Command{
 					Required: true,
 					Action: func(context *cli.Context, s string) error {
 						if !isValidOrigin(s) {
-							return cli.Exit(color.RedString("enter a valid origin (e.g., http://example.com or https://example.com)"), 1)
+							e := "enter a valid origin (e.g., http://example.com or https://example.com)"
+							color.Red(e)
+							return cli.Exit(e, 1)
 						} else {
 							return nil
 						}
@@ -61,6 +63,8 @@ var ServerCommand = &cli.Command{
 				},
 			},
 			Action: func(c *cli.Context) error {
+
+				color.Blue("installing server...")
 
 				// validate in flag handler
 				origin := c.String("origin")
@@ -75,9 +79,13 @@ var ServerCommand = &cli.Command{
 
 				// install docker
 				if !installer.IsDockerInstalled() {
+					color.Blue("installing docker...")
 					if err := installer.InstallDocker(); err != nil {
 						return err
 					}
+					color.Green("installed docker!")
+				} else {
+					color.Yellow("docker already installed")
 				}
 
 				// setup directory

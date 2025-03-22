@@ -23,7 +23,8 @@ FROM node:18-alpine AS web
 WORKDIR /app
 
 COPY --from=web-builder /app/public ./public
-COPY --from=web-builder --chown=nextjs:nodejs /app/.next .
+COPY --from=web-builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=web-builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # use supabase as base image
 FROM ghcr.io/train360-corp/supabase:6f5c1fc AS supabase

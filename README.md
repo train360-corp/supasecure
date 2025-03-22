@@ -22,7 +22,8 @@ apt install supasecure
 Upgrade:
 
 ```shell
-apt upgrade supasecure
+apt update
+apt install supasecure
 ```
 
 #### Homebrew (MacOS / Linux)
