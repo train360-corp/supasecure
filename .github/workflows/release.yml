@@ -71,7 +71,7 @@ jobs:
           done
           
           ppa-repo/update.sh
-        with:
+        env:
           KEY: ${{ secrets.KEY }}
 
       - name: Create Pull Request
