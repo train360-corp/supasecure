@@ -1,7 +1,10 @@
 package commands
 
 import (
+	"fmt"
 	"github.com/fatih/color"
+	"github.com/train360-corp/supasecure/cli/internal"
+	"github.com/train360-corp/supasecure/cli/internal/cli/utils"
 	"github.com/train360-corp/supasecure/cli/internal/cli/utils/installers"
 	"github.com/urfave/cli/v2"
 	"net/url"
@@ -99,6 +102,52 @@ var ServerCommand = &cli.Command{
 				}
 
 				return nil
+			},
+		},
+		{
+			Name:        "start",
+			Usage:       "start the server",
+			Description: "start the server",
+			Action: func(c *cli.Context) error {
+
+				// attempt to stop if already running
+				utils.CMD("/usr/bin/docker rm supasecure")
+
+				// start
+				color.Blue("starting server...")
+				exitCode := utils.CMD(fmt.Sprintf(`/usr/bin/docker run -d \
+  --name supasecure \
+  --restart unless-stopped \
+  --log-driver=journald \
+  --env-file /opt/supasecure/cfg.env \
+  -p 8000:8000 \
+  -p 3030:3030 \
+  --volume /opt/supasecure/postgres:/var/lib/postgresql/data \
+  --volume /opt/supasecure/logs:/var/log/supervisor \
+  ghcr.io/train360-corp/supasecure:%v`, internal.Version))
+
+				if exitCode != 0 {
+					return cli.Exit(color.RedString("unable to start server"), 1)
+				} else {
+					color.Green("server started")
+					return nil
+				}
+
+			},
+		},
+		{
+			Name:        "stop",
+			Usage:       "stop the server",
+			Description: "stop the server",
+			Action: func(c *cli.Context) error {
+				color.Blue("stopping server...")
+				if exitCode := utils.CMD("/usr/bin/docker stop supasecure"); exitCode != 0 {
+					return cli.Exit(color.RedString("unable to stop server"), 1)
+				} else {
+					color.Green("server stopped")
+					return nil
+				}
+
 			},
 		},
 	},
