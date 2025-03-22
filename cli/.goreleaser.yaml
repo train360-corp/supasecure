@@ -36,6 +36,11 @@ nfpms:
     maintainer: Train360, Corp.
     homepage: https://github.com/train360-corp/supasecure
     license: MIT
+    file_name_template: >-
+      {{- trimsuffix .ConventionalFileName .ConventionalExtension -}}
+      {{- if and (eq .Arm "6") (eq .ConventionalExtension ".deb") }}6{{ end -}}
+      {{- if not (eq .Amd64 "v1")}}{{ .Amd64 }}{{ end -}}
+      {{- .ConventionalExtension -}}
     formats:
       - apk
       - deb
@@ -67,12 +72,6 @@ release:
     ---
 
     Released by [GoReleaser](https://github.com/goreleaser/goreleaser).
-
-publishers:
-  - name: PPA Repository
-    dir: "{{ dir .ArtifactPath }}"
-    cmd: |
-      ls -la
 
 brews:
   - name: supasecure

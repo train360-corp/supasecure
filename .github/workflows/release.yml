@@ -29,6 +29,7 @@ jobs:
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
+        id: goreleaser
         with:
           distribution: goreleaser
           version: '~> v2'
@@ -37,6 +38,25 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_TAP_REPO_SECRET: ${{ secrets.HOMEBREW_TAP_REPO_SECRET }}
+
+      - id: extract_linux
+        run: |
+          echo "linux_packages=$(echo '${{ steps.goreleaser.outputs.artifacts }}' | jq -c '[.[] | select(.type == "Linux Package")]')" >> $GITHUB_OUTPUT
+
+      - name: Copy Linux Package files into target repo
+        run: |
+          packages=$(echo '${{ steps.extract_linux.outputs.linux_packages }}' | jq -r '.[] | @base64')
+          for pkg in $packages; do
+            _jq() {
+              echo "${pkg}" | base64 --decode | jq -r "${1}"
+            }
+      
+            path=$(_jq '.path')
+            name=$(_jq '.name')
+      
+            echo "${path} : ${name}"
+          done
+
 
   dockerize:
     name: Dockerize
