@@ -7,32 +7,33 @@ import (
 	"syscall"
 )
 
-func CMD(cmd string) int {
-	err := exec.Command("sh", "-c", cmd).Run()
+func CMD(cmd string) (string, int) {
+
+	output, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 
 	if err == nil {
-		return 0
+		return string(output), 0
 	}
 
 	var exitError *exec.ExitError
 	if errors.As(err, &exitError) {
 		if status, ok := exitError.Sys().(syscall.WaitStatus); ok {
-			return status.ExitStatus()
+			return string(output), status.ExitStatus()
 		}
 	}
 
 	// unexpected error (non-ExitError or bad type assertion)
-	return -1
+	return string(output), -1
 }
 
-func CMDS(cmds []string) (int, *string) {
+func CMDS(cmds []string) (string, int, *string) {
 	for _, c := range cmds {
-		exit := CMD(c)
-		if 0 != exit {
-			return exit, &c
+		output, code := CMD(c)
+		if 0 != code {
+			return output, code, &c
 		}
 	}
-	return 0, nil
+	return "", 0, nil
 }
 
 func IsFile(path string) bool {

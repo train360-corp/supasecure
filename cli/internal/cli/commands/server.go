@@ -86,15 +86,19 @@ var ServerCommand = &cli.Command{
 					if err := installer.InstallDocker(); err != nil {
 						return err
 					}
-					color.Green("installed docker!")
+					color.Blue("installed docker!")
 				} else {
 					color.Yellow("docker already installed")
 				}
 
 				// setup directory
+				color.Blue("creating supasecure files...")
 				if err := installer.SetupDirectory(); err != nil {
 					return err
 				}
+				color.Blue("created supasecure files!")
+
+				color.Green("server installed!")
 
 				return nil
 			},
@@ -110,7 +114,7 @@ var ServerCommand = &cli.Command{
 
 				// start
 				color.Blue("starting server...")
-				exitCode := utils.CMD(fmt.Sprintf(`/usr/bin/docker run -d \
+				output, exitCode := utils.CMD(fmt.Sprintf(`/usr/bin/docker run -d \
   --name supasecure \
   --restart unless-stopped \
   --log-driver=journald \
@@ -122,6 +126,7 @@ var ServerCommand = &cli.Command{
   ghcr.io/train360-corp/supasecure:%v`, internal.Version))
 
 				if exitCode != 0 {
+					color.Red(output)
 					return cli.Exit(color.RedString("unable to start server"), 1)
 				} else {
 					color.Green("server started")
@@ -136,7 +141,8 @@ var ServerCommand = &cli.Command{
 			Description: "stop the server",
 			Action: func(c *cli.Context) error {
 				color.Blue("stopping server...")
-				if exitCode := utils.CMD("/usr/bin/docker stop supasecure"); exitCode != 0 {
+				if output, exitCode := utils.CMD("/usr/bin/docker stop supasecure"); exitCode != 0 {
+					color.Red(output)
 					return cli.Exit(color.RedString("unable to stop server"), 1)
 				} else {
 					color.Green("server stopped")

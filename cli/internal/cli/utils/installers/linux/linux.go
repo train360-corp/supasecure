@@ -32,7 +32,8 @@ func isPrivilegedUser() bool {
 }
 
 func (i *Installer) IsDockerInstalled() bool {
-	return 0 == utils.CMD("docker -v")
+	_, code := utils.CMD("docker -v")
+	return 0 == code
 }
 
 func (i *Installer) InstallDocker() error {
@@ -41,11 +42,11 @@ func (i *Installer) InstallDocker() error {
 		return cli.Exit(color.RedString("command must be run as root user or with sudo"), 1)
 	}
 
-	if 0 != utils.CMD("for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do apt-get remove $pkg; done") {
+	if _, code := utils.CMD("for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do apt-get remove $pkg; done"); 0 != code {
 		return cli.Exit(color.RedString("unable to remove outdated docker components"), 1)
 	}
 
-	if code, _ := utils.CMDS([]string{
+	if _, code, _ := utils.CMDS([]string{
 		"apt-get update",
 		"apt-get install -y ca-certificates curl",
 		"install -m 0755 -d /etc/apt/keyrings",
@@ -58,7 +59,7 @@ $(. /etc/os-release && echo ${UBUNTU_CODENAME:-$VERSION_CODENAME}) stable" > /et
 		return cli.Exit(color.RedString("unable to install docker keyring"), 1)
 	}
 
-	if 0 != utils.CMD("apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin") {
+	if _, code := utils.CMD("apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin"); 0 != code {
 		return cli.Exit(color.RedString("unable to install docker"), 1)
 	}
 
