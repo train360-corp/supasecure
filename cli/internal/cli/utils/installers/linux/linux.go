@@ -136,3 +136,23 @@ func (i *Installer) SetupDirectory() error {
 
 	return nil
 }
+
+func (i *Installer) IsOpenSSLInstalled() bool {
+	_, code := utils.CMD("openssl --version")
+	return 0 == code
+}
+
+func (i *Installer) GetOpenSSLCertificates() error {
+	base := "/opt/supasecure/self-signed-certs"
+	if !utils.IsDir(base) {
+		if err := os.Mkdir(base, 0755); err != nil {
+			return cli.Exit("unable to create self-signed certs directory", 1)
+		}
+	}
+	key := fmt.Sprintf(fmt.Sprintf("%v/key.pem", base))
+	cert := fmt.Sprintf(fmt.Sprintf("%v/cert.pem", base))
+	if out, code := utils.CMD(fmt.Sprintf(`openssl req -x509 -newkey rsa:4096 -keyout %s -out %s -sha256 -days 3650 -nodes -subj "/C=US/ST=Delaware/L=Dover/O=Train360, Corp./OU=Security/CN=train360.co"`, key, cert)); code != 0 {
+		return cli.Exit(color.RedString("unable to create self-signed certificates: %v", out), 1)
+	}
+	return nil
+}

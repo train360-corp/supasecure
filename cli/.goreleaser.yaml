@@ -46,6 +46,8 @@ nfpms:
       - deb
       - rpm
       - archlinux
+    dependencies:
+      - openssl
 
 archives:
   - formats: [ tar.gz ]

@@ -15,6 +15,9 @@ type Installer interface {
 	GetCertbotCertificates() error
 	InstallCertbot() error
 	SetupDirectory() error
+
+	IsOpenSSLInstalled() bool
+	GetOpenSSLCertificates() error
 }
 
 func GetInstaller(origin string) (Installer, error) {

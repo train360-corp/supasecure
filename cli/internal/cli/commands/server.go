@@ -46,19 +46,19 @@ var ServerCommand = &cli.Command{
 			Description: "install an instance locally",
 			Flags: []cli.Flag{
 				&cli.BoolFlag{
-					Name: "internal",
-					Aliases: []string{"i"},
+					Name:     "internal",
+					Aliases:  []string{"i"},
 					Required: false,
-					Usage: ""
+					Usage:    "whether the domain is a valid FQDN (publicly accessible) or a private, internal-only domain (determines SSL method as either Certbot or self-signed)",
 				},
 				&cli.StringFlag{
-					Name:     "origin",
-					Aliases:  []string{"o"},
+					Name:     "domain",
+					Aliases:  []string{"d"},
 					Required: true,
-					Usage: "sets the domain to use",
+					Usage:    "sets the domain to use",
 					Action: func(context *cli.Context, s string) error {
 						if !isValidOrigin(s) {
-							e := "enter a valid origin (e.g., example.com or example.local)"
+							e := "enter a valid domain (e.g., example.com or example.local)"
 							color.Red(e)
 							return cli.Exit(e, 1)
 						} else {
@@ -72,7 +72,7 @@ var ServerCommand = &cli.Command{
 				color.Blue("installing server...")
 
 				// validate in flag handler
-				origin := c.String("origin")
+				origin := c.String("domain")
 
 				var err error
 				var installer installers.Installer
@@ -93,8 +93,27 @@ var ServerCommand = &cli.Command{
 					color.Yellow("docker already installed")
 				}
 
-				// install certbot
-				if strings.HasPrefix(origin, "https://") {
+				// setup directory
+				color.Blue("creating supasecure files...")
+				if err := installer.SetupDirectory(); err != nil {
+					return err
+				}
+				if _, code := utils.CMD(fmt.Sprintf("ghcr.io/train360-corp/supasecure:v%v", internal.Version)); code != 0 {
+					color.Yellow("unable to pre-pull supasecure docker image")
+				}
+				color.Blue("created supasecure files!")
+
+				// install SSL certificates
+				if c.Bool("internal") {
+					color.Blue("generating self-signed SSL certificates...")
+					if !installer.IsOpenSSLInstalled() {
+						return cli.Exit("openssl not installed, but is required for generating self-signed SSL certificates!", 1)
+					}
+					if err := installer.GetOpenSSLCertificates(); err != nil {
+						return err
+					}
+					color.Blue("generated self-signed SSL certificates!")
+				} else {
 					if !installer.IsCertbotInstalled() {
 						color.Blue("installing certbot...")
 						if err := installer.InstallCertbot(); err != nil {
@@ -112,16 +131,6 @@ var ServerCommand = &cli.Command{
 					}
 					color.Blue("retrieved certbot certificates!")
 				}
-
-				// setup directory
-				color.Blue("creating supasecure files...")
-				if err := installer.SetupDirectory(); err != nil {
-					return err
-				}
-				if _, code := utils.CMD(fmt.Sprintf("ghcr.io/train360-corp/supasecure:v%v", internal.Version)); code != 0 {
-					color.Yellow("unable to pre-pull supasecure docker image")
-				}
-				color.Blue("created supasecure files!")
 
 				color.Green("server installed!")
 
