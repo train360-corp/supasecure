@@ -7,32 +7,11 @@ import (
 	"github.com/train360-corp/supasecure/cli/internal/cli/utils"
 	"github.com/train360-corp/supasecure/cli/internal/cli/utils/installers"
 	"github.com/urfave/cli/v2"
-	"net/url"
-	"strings"
+	"regexp"
 )
 
 func isValidOrigin(s string) bool {
-	u, err := url.Parse(s)
-	if err != nil {
-		return false
-	}
-
-	// must have a host
-	if u.Host == "" {
-		return false
-	}
-
-	// disallow port
-	if strings.Contains(u.Host, ":") {
-		return false
-	}
-
-	// no scheme, path, query, or fragment allowed
-	if u.Scheme != "" || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
-		return false
-	}
-
-	return true
+	return regexp.MustCompile(`^([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|(\d{1,3}\.){3}\d{1,3})$`).MatchString(s)
 }
 
 var ServerCommand = &cli.Command{
