@@ -22,6 +22,7 @@ apt install supasecure
 Upgrade:
 
 ```shell
+rm -rf /var/lib/apt/lists/train360-corp.github.io_*
 apt update
 apt install supasecure
 ```
