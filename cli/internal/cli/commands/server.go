@@ -7,11 +7,40 @@ import (
 	"github.com/train360-corp/supasecure/cli/internal/cli/utils"
 	"github.com/train360-corp/supasecure/cli/internal/cli/utils/installers"
 	"github.com/urfave/cli/v2"
+	"os"
+	"path/filepath"
 	"regexp"
+	"strings"
 )
 
 func isValidOrigin(s string) bool {
 	return regexp.MustCompile(`^([a-zA-Z0-9.-]+\.[a-zA-Z]{2,}|(\d{1,3}\.){3}\d{1,3})$`).MatchString(s)
+}
+
+func getLetsEncryptCerts() *string {
+	basePath := "/etc/letsencrypt/live"
+
+	entries, err := os.ReadDir(basePath)
+	if err != nil {
+		return nil
+	}
+
+	var dirs []string
+	for _, entry := range entries {
+		if entry.IsDir() {
+			dirs = append(dirs, entry.Name())
+		}
+	}
+
+	if len(dirs) == 0 {
+		return nil
+	}
+	if len(dirs) > 1 {
+		return nil
+	}
+
+	fullPath := filepath.Join(basePath, dirs[0])
+	return &fullPath
 }
 
 var ServerCommand = &cli.Command{
@@ -83,6 +112,7 @@ var ServerCommand = &cli.Command{
 				color.Blue("created supasecure files!")
 
 				// install SSL certificates
+				color.Blue("configuring SSL...")
 				if c.Bool("internal") {
 					color.Blue("generating self-signed SSL certificates...")
 					if !installer.IsOpenSSLInstalled() {
@@ -125,6 +155,16 @@ var ServerCommand = &cli.Command{
 				// attempt to stop if already running
 				utils.CMD("/usr/bin/docker rm supasecure")
 
+				// ssl certificates directory
+				certs := "/opt/supasecure/self-signed-certs"
+				if letsEncryptDir := getLetsEncryptCerts(); letsEncryptDir != nil {
+					certs = *letsEncryptDir
+				}
+
+				if !utils.IsDir(certs) {
+					return cli.Exit(color.RedString("unable to locate SSL certificates!"), 1)
+				}
+
 				// start
 				color.Blue("starting server...")
 				output, exitCode := utils.CMD(fmt.Sprintf(`/usr/bin/docker run -d \
@@ -132,12 +172,12 @@ var ServerCommand = &cli.Command{
   --restart unless-stopped \
   --log-driver=journald \
   --env-file /opt/supasecure/cfg.env \
-  --publish 80:80 \
   --publish 443:443 \
   --volume /opt/supasecure/postgres:/var/lib/postgresql/data \
   --volume /opt/supasecure/logs:/var/log/supervisor \
-  --volume /opt/supasecure/nginx:/etc/nginx/sites-enabled \
-  ghcr.io/train360-corp/supasecure:v%v`, internal.Version))
+  --volume /opt/supasecure/nginx:/etc/nginx/sites-enabled:ro \
+  --volume %v:/supasecure/ssl-certificates:ro \
+  ghcr.io/train360-corp/supasecure:v%v`, strings.TrimSuffix(certs, "/"), internal.Version))
 
 				if exitCode != 0 {
 					color.Red(output)

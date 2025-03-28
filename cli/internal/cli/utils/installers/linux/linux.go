@@ -101,7 +101,7 @@ $(. /etc/os-release && echo ${UBUNTU_CODENAME:-$VERSION_CODENAME}) stable" > /et
 }
 
 func (i *Installer) GetCertbotCertificates() error {
-	if resp, code := utils.CMD(fmt.Sprintf(`sudo certbot certonly --standalone --non-interactive --agree-tos --expand -d %s -d supabase.%s`, i.host, i.host)); code != 0 {
+	if resp, code := utils.CMD(fmt.Sprintf(`sudo certbot certonly --standalone --non-interactive --agree-tos --expand -d %s`, i.host)); code != 0 {
 		return cli.Exit(color.RedString("unable to get certbot certificates: %v", resp), 1)
 	}
 	return nil
