@@ -51,3 +51,7 @@ func IsDir(path string) bool {
 	}
 	return info.IsDir()
 }
+
+func Write(filename string, contents string) error {
+	return os.WriteFile(filename, []byte(contents), 0644)
+}

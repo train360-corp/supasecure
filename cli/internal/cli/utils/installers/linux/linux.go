@@ -1,10 +1,10 @@
 package linux
 
 import (
-	_ "embed"
 	"fmt"
 	"github.com/fatih/color"
 	"github.com/train360-corp/supasecure/cli/internal/cli/utils"
+	"github.com/train360-corp/supasecure/cli/internal/utils/nginx"
 	"github.com/train360-corp/supasecure/cli/internal/utils/supabase"
 	"github.com/urfave/cli/v2"
 	"os"
@@ -13,12 +13,12 @@ import (
 )
 
 type Installer struct {
-	origin string
+	host string
 }
 
-func NewInstaller(origin string) *Installer {
+func NewInstaller(host string) *Installer {
 	return &Installer{
-		origin: origin,
+		host: host,
 	}
 }
 
@@ -29,6 +29,36 @@ func isPrivilegedUser() bool {
 		return false
 	}
 	return strings.TrimSpace(string(out)) == "0"
+}
+
+func (i *Installer) IsCertbotInstalled() bool {
+	_, code := utils.CMD("certbot --version")
+	return 0 == code
+}
+
+func (i *Installer) InstallCertbot() error {
+
+	if !isPrivilegedUser() {
+		return cli.Exit(color.RedString("command must be run as root user or with sudo"), 1)
+	}
+
+	// remove any existing certbot
+	utils.CMD("sudo apt remove certbot")
+
+	// install snap core
+	if _, code := utils.CMD("sudo snap install core; sudo snap refresh core"); 0 != code {
+		return cli.Exit(color.RedString("unable to install snap core"), 1)
+	}
+
+	// install certbot
+	if _, code := utils.CMD("sudo snap install --classic certbot"); code != 0 {
+		return cli.Exit(color.RedString("unable to install certbot"), 1)
+	}
+
+	// link certbot
+	utils.CMD("sudo ln -s /snap/bin/certbot /usr/bin/certbot")
+
+	return nil
 }
 
 func (i *Installer) IsDockerInstalled() bool {
@@ -70,6 +100,13 @@ $(. /etc/os-release && echo ${UBUNTU_CODENAME:-$VERSION_CODENAME}) stable" > /et
 	return nil
 }
 
+func (i *Installer) GetCertbotCertificates() error {
+	if resp, code := utils.CMD(fmt.Sprintf(`sudo certbot certonly --standalone --non-interactive --agree-tos --expand -d %s -d supabase.%s`, i.host, i.host)); code != 0 {
+		return cli.Exit(color.RedString("unable to get certbot certificates: %v", resp), 1)
+	}
+	return nil
+}
+
 func (i *Installer) SetupDirectory() error {
 
 	path := "/opt/supasecure"
@@ -82,9 +119,19 @@ func (i *Installer) SetupDirectory() error {
 	}
 
 	// create .env file
-	err := supabase.WriteConfig(fmt.Sprintf("%s/cfg.env", path), supabase.GetConfig(i.origin))
-	if err != nil {
+	if err := supabase.WriteConfig(fmt.Sprintf("%s/cfg.env", path), supabase.GetConfig(i.host)); err != nil {
 		return cli.Exit(color.RedString("unable to write config file to installation directory"), 1)
+	}
+
+	// create nginx config
+	nginxPath := fmt.Sprintf("%s/nginx", path)
+	if !utils.IsDir(nginxPath) {
+		if err := os.Mkdir(nginxPath, 0755); err != nil {
+			return cli.Exit(color.RedString("unable to create nginx installation directory"), 1)
+		}
+	}
+	if err := utils.Write(fmt.Sprintf("%s/supasecure.conf", nginxPath), nginx.GetConfig(i.host)); err != nil {
+		return cli.Exit(color.RedString("unable to write nginx configuration file to installation directory"), 1)
 	}
 
 	return nil

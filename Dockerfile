@@ -27,7 +27,12 @@ COPY --from=web-builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=web-builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # use supabase as base image
-FROM ghcr.io/train360-corp/supabase:6f5c1fc AS supabase
+FROM ghcr.io/train360-corp/supabase:6074d20 AS supabase
+
+# install nginx
+RUN apt-get update && \
+    apt-get install -y nginx && \
+    apt-get clean
 
 # copy supervisor configurations
 COPY /supervisor /etc/supervisor/conf.d

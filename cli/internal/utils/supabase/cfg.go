@@ -13,8 +13,8 @@ func GetConfig(siteURL string) Config {
 	secret := random.String(40)
 	return map[string]string{
 		// Access + Public URLs
-		"SITE_URL":            siteURL,
-		"SUPABASE_PUBLIC_URL": fmt.Sprintf("%v/supabase", siteURL),
+		"SITE_URL":            fmt.Sprintf("https://%s", siteURL),
+		"SUPABASE_PUBLIC_URL": fmt.Sprintf("https://%v/supabase", siteURL),
 
 		// Supabase keys
 		"SUPABASE_JWT_SECRET":  secret,

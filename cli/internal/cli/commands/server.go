@@ -17,11 +17,6 @@ func isValidOrigin(s string) bool {
 		return false
 	}
 
-	// must have http or https scheme
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return false
-	}
-
 	// must have a host
 	if u.Host == "" {
 		return false
@@ -32,8 +27,8 @@ func isValidOrigin(s string) bool {
 		return false
 	}
 
-	// no path, query, or fragment allowed
-	if u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
+	// no scheme, path, query, or fragment allowed
+	if u.Scheme != "" || u.Path != "" || u.RawQuery != "" || u.Fragment != "" {
 		return false
 	}
 
@@ -50,13 +45,20 @@ var ServerCommand = &cli.Command{
 			Usage:       "install an instance locally",
 			Description: "install an instance locally",
 			Flags: []cli.Flag{
+				&cli.BoolFlag{
+					Name: "internal",
+					Aliases: []string{"i"},
+					Required: false,
+					Usage: ""
+				},
 				&cli.StringFlag{
 					Name:     "origin",
 					Aliases:  []string{"o"},
 					Required: true,
+					Usage: "sets the domain to use",
 					Action: func(context *cli.Context, s string) error {
 						if !isValidOrigin(s) {
-							e := "enter a valid origin (e.g., http://example.com or https://example.com)"
+							e := "enter a valid origin (e.g., example.com or example.local)"
 							color.Red(e)
 							return cli.Exit(e, 1)
 						} else {
@@ -91,6 +93,26 @@ var ServerCommand = &cli.Command{
 					color.Yellow("docker already installed")
 				}
 
+				// install certbot
+				if strings.HasPrefix(origin, "https://") {
+					if !installer.IsCertbotInstalled() {
+						color.Blue("installing certbot...")
+						if err := installer.InstallCertbot(); err != nil {
+							return err
+						}
+						color.Blue("installed certbot!")
+					} else {
+						color.Yellow("certbot already installed")
+					}
+
+					// configure certbot
+					color.Blue("retrieving certbot certificates...")
+					if err := installer.GetCertbotCertificates(); err != nil {
+						return err
+					}
+					color.Blue("retrieved certbot certificates!")
+				}
+
 				// setup directory
 				color.Blue("creating supasecure files...")
 				if err := installer.SetupDirectory(); err != nil {
@@ -122,10 +144,11 @@ var ServerCommand = &cli.Command{
   --restart unless-stopped \
   --log-driver=journald \
   --env-file /opt/supasecure/cfg.env \
-  -p 8000:8000 \
-  -p 3030:3030 \
+  --publish 80:80 \
+  --publish 443:443 \
   --volume /opt/supasecure/postgres:/var/lib/postgresql/data \
   --volume /opt/supasecure/logs:/var/log/supervisor \
+  --volume /opt/supasecure/nginx:/etc/nginx/sites-enabled \
   ghcr.io/train360-corp/supasecure:v%v`, internal.Version))
 
 				if exitCode != 0 {
