@@ -96,6 +96,9 @@ var ServerCommand = &cli.Command{
 				if err := installer.SetupDirectory(); err != nil {
 					return err
 				}
+				if _, code := utils.CMD(fmt.Sprintf("ghcr.io/train360-corp/supasecure:v%v", internal.Version)); code != 0 {
+					color.Yellow("unable to pre-pull supasecure docker image")
+				}
 				color.Blue("created supasecure files!")
 
 				color.Green("server installed!")
@@ -123,7 +126,7 @@ var ServerCommand = &cli.Command{
   -p 3030:3030 \
   --volume /opt/supasecure/postgres:/var/lib/postgresql/data \
   --volume /opt/supasecure/logs:/var/log/supervisor \
-  ghcr.io/train360-corp/supasecure:%v`, internal.Version))
+  ghcr.io/train360-corp/supasecure:v%v`, internal.Version))
 
 				if exitCode != 0 {
 					color.Red(output)
