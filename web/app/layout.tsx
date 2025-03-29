@@ -7,7 +7,6 @@ import { Toaster } from "@/components/ui/sonner";
 import SupabaseProvider from "@/lib/supabase/providers/SupabaseProvider";
 
 
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: [ "latin" ],
