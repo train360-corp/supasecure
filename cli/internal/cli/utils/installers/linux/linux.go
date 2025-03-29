@@ -149,7 +149,7 @@ func (i *Installer) GetOpenSSLCertificates() error {
 			return cli.Exit("unable to create self-signed certs directory", 1)
 		}
 	}
-	key := fmt.Sprintf(fmt.Sprintf("%v/key.pem", base))
+	key := fmt.Sprintf(fmt.Sprintf("%v/privkey.pem", base))
 	cert := fmt.Sprintf(fmt.Sprintf("%v/cert.pem", base))
 	if out, code := utils.CMD(fmt.Sprintf(`openssl req -x509 -newkey rsa:4096 -keyout %s -out %s -sha256 -days 3650 -nodes -subj "/C=US/ST=Delaware/L=Dover/O=Train360, Corp./OU=Security/CN=train360.co"`, key, cert)); code != 0 {
 		return cli.Exit(color.RedString("unable to create self-signed certificates: %v", out), 1)

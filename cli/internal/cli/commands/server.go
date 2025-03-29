@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strings"
 )
 
 func isValidOrigin(s string) bool {
@@ -41,6 +40,63 @@ func getLetsEncryptCerts() *string {
 
 	fullPath := filepath.Join(basePath, dirs[0])
 	return &fullPath
+}
+
+// resolveCertPaths returns absolute paths of privkey.pem and cert.pem
+// If they are symlinks, resolves them. If they are regular files, returns absolute path.
+func resolveCertPaths(certDir string) (privKeyPath, certPath string, err error) {
+	privKeyInput := filepath.Join(certDir, "privkey.pem")
+	certInput := filepath.Join(certDir, "cert.pem")
+
+	privKeyResolved, err := resolveIfSymlink(privKeyInput)
+	if err != nil {
+		return "", "", fmt.Errorf("privkey.pem: %w", err)
+	}
+
+	certResolved, err := resolveIfSymlink(certInput)
+	if err != nil {
+		return "", "", fmt.Errorf("cert.pem: %w", err)
+	}
+
+	return privKeyResolved, certResolved, nil
+}
+
+func resolveIfSymlink(path string) (string, error) {
+	info, err := os.Lstat(path)
+	if err != nil {
+		return "", fmt.Errorf("file does not exist: %w", err)
+	}
+
+	if info.Mode()&os.ModeSymlink != 0 {
+		resolved, err := filepath.EvalSymlinks(path)
+		if err != nil {
+			return "", fmt.Errorf("failed to resolve symlink: %w", err)
+		}
+		return resolved, nil
+	}
+
+	// If not symlink, return absolute path
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return "", fmt.Errorf("failed to get absolute path: %w", err)
+	}
+	return abs, nil
+}
+
+func getRunCommand(privKey string, cert string) string {
+	return fmt.Sprintf(`/usr/bin/docker run -d \
+  --name supasecure \
+  --restart unless-stopped \
+  --log-driver=journald \
+  --env-file /opt/supasecure/cfg.env \
+  --publish 443:443 \
+  --publish 80:80 \
+  --volume /opt/supasecure/postgres:/var/lib/postgresql/data \
+  --volume /opt/supasecure/logs:/var/log/supervisor \
+  --volume /opt/supasecure/nginx:/etc/nginx/sites-enabled:ro \
+  --volume %s:/supasecure/ssl-certificates/privkey.pem:ro \
+  --volume %s:/supasecure/ssl-certificates/cert.pem:ro \
+  ghcr.io/train360-corp/supasecure:v%v`, privKey, cert, internal.Version)
 }
 
 var ServerCommand = &cli.Command{
@@ -165,28 +221,19 @@ var ServerCommand = &cli.Command{
 					return cli.Exit(color.RedString("unable to locate SSL certificates!"), 1)
 				}
 
-				// start
-				color.Blue("starting server...")
-				output, exitCode := utils.CMD(fmt.Sprintf(`/usr/bin/docker run -d \
-  --name supasecure \
-  --restart unless-stopped \
-  --log-driver=journald \
-  --env-file /opt/supasecure/cfg.env \
-  --publish 443:443 \
-  --volume /opt/supasecure/postgres:/var/lib/postgresql/data \
-  --volume /opt/supasecure/logs:/var/log/supervisor \
-  --volume /opt/supasecure/nginx:/etc/nginx/sites-enabled:ro \
-  --volume %v:/supasecure/ssl-certificates:ro \
-  ghcr.io/train360-corp/supasecure:v%v`, strings.TrimSuffix(certs, "/"), internal.Version))
-
-				if exitCode != 0 {
-					color.Red(output)
-					return cli.Exit(color.RedString("unable to start server"), 1)
-				} else {
-					color.Green("server started")
-					return nil
+				privKey, cert, err := resolveCertPaths(certs)
+				if err != nil {
+					return err
 				}
 
+				// start
+				color.Blue("starting server...")
+				if output, exitCode := utils.CMD(getRunCommand(privKey, cert)); exitCode != 0 {
+					color.Red(output)
+					return cli.Exit(color.RedString("unable to start server"), 1)
+				}
+				color.Green("server started")
+				return nil
 			},
 		},
 		{
