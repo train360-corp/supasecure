@@ -15,8 +15,8 @@ server {
     listen 443 ssl http2;
     listen [::]:443 ssl http2;
     server_name %s;
-    ssl_certificate     /etc/nginx/ssl/cert.pem;
-    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+    ssl_certificate     /supasecure/ssl-certificates/cert.pem;
+    ssl_certificate_key /supasecure/ssl-certificates/privkey.pem;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers 'ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256';
     ssl_prefer_server_ciphers on;

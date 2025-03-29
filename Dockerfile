@@ -1,8 +1,6 @@
 FROM node:18-alpine AS web-deps
-
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
-
 COPY web/package.json web/package-lock.json* ./
 RUN npm ci --force
 
@@ -10,18 +8,12 @@ FROM node:18-alpine AS web-builder
 WORKDIR /app
 COPY --from=web-deps /app/node_modules ./node_modules
 COPY web .
-
 ENV NEXT_TELEMETRY_DISABLED=1
-
-ENV SUPABASE_URL=http://127.0.0.1:54321
-ENV SUPABASE_ANON_KEY=not-set
 ENV NODE_ENV=production
-
-RUN npm run build
+RUN SUPABASE_ANON_KEY=not-set SUPABASE_PUBLIC_URL=http://127.0.0.1:54321 npm run build
 
 FROM node:18-alpine AS web
 WORKDIR /app
-
 COPY --from=web-builder /app/public ./public
 COPY --from=web-builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=web-builder --chown=nextjs:nodejs /app/.next/static ./.next/static

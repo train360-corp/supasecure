@@ -8,7 +8,7 @@ export async function createClient(): Promise<SupabaseClient> {
   const cookieStore = await cookies();
 
   return createServerClient(
-    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_PUBLIC_URL!,
     process.env.SUPABASE_ANON_KEY!,
     {
       cookies: {

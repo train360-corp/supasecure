@@ -3,8 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ReactNode } from "react";
-import SupabaseServerProvider from "@/lib/supabase/providers/SupabaseServerProvider";
 import { Toaster } from "@/components/ui/sonner";
+import SupabaseProvider from "@/lib/supabase/providers/SupabaseProvider";
 
 
 
@@ -39,9 +39,9 @@ export default function RootLayout({
       enableSystem
       disableTransitionOnChange
     >
-      <SupabaseServerProvider>
+      <SupabaseProvider>
         {children}
-      </SupabaseServerProvider>
+      </SupabaseProvider>
       <Toaster />
     </ThemeProvider>
     </body>

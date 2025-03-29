@@ -8,7 +8,7 @@ export async function updateSession(request: NextRequest) {
     });
 
     const supabase = createServerClient(
-        process.env.SUPABASE_URL!,
+        process.env.SUPABASE_PUBLIC_URL!,
         process.env.SUPABASE_ANON_KEY!,
         {
             cookies: {
@@ -39,7 +39,7 @@ export async function updateSession(request: NextRequest) {
     if (user !== null && user.role === "client") throw new Error("clients do not have access to web portal");
 
     // redirect to login if not authenticated
-    if (!user && request.nextUrl.pathname.startsWith("/dashboard"))
+    if (!user && (request.nextUrl.pathname.startsWith("/dashboard") || (request.nextUrl.pathname.startsWith("/api") && !request.nextUrl.pathname.startsWith("/api/public"))))
         return NextResponse.redirect(`${request.nextUrl.origin}/login?error=unauthorized&next=${encodeURIComponent(request.nextUrl.pathname)}`);
 
     // IMPORTANT: You *must* return the supabaseResponse object as it is.
